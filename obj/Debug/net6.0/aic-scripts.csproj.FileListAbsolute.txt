@@ -1,0 +1,17 @@
+/Users/lukesimkins/Projects/crossfold/aic-scripts/bin/Debug/net6.0/aic-scripts
+/Users/lukesimkins/Projects/crossfold/aic-scripts/bin/Debug/net6.0/aic-scripts.deps.json
+/Users/lukesimkins/Projects/crossfold/aic-scripts/bin/Debug/net6.0/aic-scripts.runtimeconfig.json
+/Users/lukesimkins/Projects/crossfold/aic-scripts/bin/Debug/net6.0/aic-scripts.dll
+/Users/lukesimkins/Projects/crossfold/aic-scripts/bin/Debug/net6.0/aic-scripts.pdb
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.csproj.AssemblyReference.cache
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.GeneratedMSBuildEditorConfig.editorconfig
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.AssemblyInfoInputs.cache
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.AssemblyInfo.cs
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.csproj.CoreCompileInputs.cache
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.dll
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/refint/aic-scripts.dll
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.pdb
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.genruntimeconfig.cache
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/ref/aic-scripts.dll
+/Users/lukesimkins/Projects/crossfold/aic-scripts/bin/Debug/net6.0/CsvHelper.dll
+/Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.csproj.CopyComplete

@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "KrXbxOpE/0MLT1zgWobloR8pXeRgCZddqMCBzGtjudbTJcR7kBP9OPh1ochW8Kwi113pFGAl8sRbujcweI3rAA==",
+  "success": true,
+  "projectFilePath": "/Users/lukesimkins/Projects/crossfold/aic-scripts/aic-scripts.csproj",
+  "expectedPackageFiles": [
+    "/Users/lukesimkins/.nuget/packages/csvhelper/27.2.1/csvhelper.27.2.1.nupkg.sha512"
+  ],
+  "logs": []
+}
