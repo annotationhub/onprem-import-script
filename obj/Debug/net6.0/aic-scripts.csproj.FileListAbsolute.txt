@@ -15,3 +15,4 @@
 /Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/ref/aic-scripts.dll
 /Users/lukesimkins/Projects/crossfold/aic-scripts/bin/Debug/net6.0/CsvHelper.dll
 /Users/lukesimkins/Projects/crossfold/aic-scripts/obj/Debug/net6.0/aic-scripts.csproj.CopyComplete
+/Users/lukesimkins/Projects/crossfold/aic-scripts/bin/Debug/net6.0/Newtonsoft.Json.dll

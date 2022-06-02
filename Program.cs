@@ -1,10 +1,8 @@
-﻿using System;
-using System.Net;
-using System.IO;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using CsvHelper;
 using System.Globalization;
+using System.Linq;
+using Newtonsoft.Json;
 
 namespace ImportAnnoLabSources
 {
@@ -17,9 +15,14 @@ namespace ImportAnnoLabSources
         static readonly string apiBaseUri = "http://localhost:8080/v1";
         static readonly string uploadUri = $"{apiBaseUri}/source/upload-pdf";
         static readonly string pendingSourceUri = $"{apiBaseUri}/pending-source";
+
+        static readonly string predictUri = $"{apiBaseUri}/model/infer/batch";
         static readonly string authHeader = "Api-Key KS7YXWC-R5NM63T-H0NR63N-DVZBR86";
 
         static readonly int pollInterval = 15000;
+
+        static readonly int[] modelGroup1 = new int[]{ 13 };
+        static readonly int[] modelGroup2 = new int[]{ 11, 12 };
 
         static async Task Main()
         {
@@ -35,13 +38,95 @@ namespace ImportAnnoLabSources
             Console.WriteLine("Successfully uploaded <{0}>", result.pendingSource.name);
           }
 
+          Console.WriteLine("PS Count: {0} ", pendingSources.Count);
+
           Console.WriteLine("Waiting on OCR to Complete...");
-          await PollUntilOcrComplete(pendingSources);
+          var finishedSources = await PollUntilOcrComplete(pendingSources);
           Console.WriteLine("OCR Completed. Preparing to run predictions.");
 
+          Console.WriteLine("PS Count 2: {0} ", finishedSources.Count);
+
+          await SubmitBatchInferences(finishedSources, modelGroup1);
+          Console.WriteLine("Batch 1 predictions Completed. Submitting second batch");
+          await SubmitBatchInferences(finishedSources, modelGroup2);
         }
 
-        static async Task<bool> PollUntilOcrComplete(List<PendingSource> pendingSources)
+        static async Task<List<InferenceJob>> SubmitBatchInferences(List<PendingSource> pendingSources, int[] modelIds)
+        {
+          var inferenceStatuses = new List<InferenceJob>();
+
+          foreach (int modelId in modelIds)
+          {
+            inferenceStatuses.Add(await SubmitBatchInference(pendingSources, modelId));
+          }
+
+          return inferenceStatuses;
+        }
+
+        static async Task<InferenceJob> SubmitBatchInference(List<PendingSource> pendingSources, int modelId)
+        {
+          var sourceIds = pendingSources
+            .Where(ps => ps.finalSourceId != null)
+            .Select(ps => ps.finalSourceId)
+            .OfType<int>()
+            .ToArray();
+          var body = new SubmitInferenceBody() {
+            groupName = groupName,
+            projectIdentifier = projectName,
+            outputLayerIdentifier = "Gold Set",
+            modelIdentifier = modelId,
+            sourceIds = sourceIds
+          };
+
+          var jsonData = JsonConvert.SerializeObject(body);
+          var contentData = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
+          var response = await client.PostAsync(predictUri, contentData);
+
+          try
+          {
+            response.EnsureSuccessStatusCode();
+            var status = await response.Content.ReadFromJsonAsync<InferenceJob>();
+
+            return status;
+          }
+          catch (HttpRequestException e)
+          {
+            Console.WriteLine("Failed to submit batch for model id <{0}>. Error: {1} ", modelId, e.Message);
+            throw e;
+          }
+        }
+
+        static async Task<List<InferenceJob>> PollUntilBatchJobsComplete(List<InferenceJob> inferenceJobs)
+        {
+          var updatedList = new List<InferenceJob>();
+
+          foreach (InferenceJob job in inferenceJobs)
+          {
+            if (job.status != "Complete" || job.status != "Errored") {
+              var updatedJob = await client.GetFromJsonAsync<InferenceJob>($"{predictUri}/{job.inferenceJobId}");
+              updatedList.Add(updatedJob);
+            } else {
+              updatedList.Add(job);
+            }
+          }
+
+          var complete = true;
+          foreach (InferenceJob job in updatedList)
+          {
+            if (job.status != "Complete" || job.status != "Errored") {
+              complete = false;
+            }
+          }
+
+          if (!complete) {
+            Thread.Sleep(pollInterval);
+            return await PollUntilBatchJobsComplete(inferenceJobs);
+          } else {
+            return updatedList;
+          }
+        }
+
+        static async Task<List<PendingSource>> PollUntilOcrComplete(List<PendingSource> pendingSources)
         {
           var updatedList = new List<PendingSource>();
 
@@ -62,7 +147,6 @@ namespace ImportAnnoLabSources
           var complete = true;
           foreach (PendingSource ps in updatedList)
           {
-            Console.WriteLine("Pending Source <{0}> <{1}>", ps.finalSourceId, ps.status);
             if (ps.finalSourceId == null && ps.status != "Errored") {
               complete = false;
               break;
@@ -73,7 +157,7 @@ namespace ImportAnnoLabSources
             Thread.Sleep(pollInterval);
             return await PollUntilOcrComplete(updatedList);
           } else {
-            return true;
+            return updatedList;
           }
 
         }
@@ -155,5 +239,23 @@ namespace ImportAnnoLabSources
 
       public string? status { get; set; }
       public int? finalSourceId { get; set; }
+    }
+
+    class InferenceJob
+    {
+      public int inferenceJobId { get; set; }
+      public int projectId { get; set; }
+      public int[] sourceIds { get; set; }
+      
+      public string status { get; set; }
+    }
+
+    class SubmitInferenceBody
+    {
+      public string groupName { get; set; }
+      public string projectIdentifier { get; set; }
+      public string outputLayerIdentifier { get; set; }
+      public int modelIdentifier { get; set; }
+      public int[] sourceIds { get; set; }
     }
 }
