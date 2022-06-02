@@ -1,10 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "KrXbxOpE/0MLT1zgWobloR8pXeRgCZddqMCBzGtjudbTJcR7kBP9OPh1ochW8Kwi113pFGAl8sRbujcweI3rAA==",
+  "dgSpecHash": "1lwFKx3tPuIYF2GJY8FHZlElTlX4vc9uoF+gAoNlU0g8TEVuDNNsPh28d2pYkGdDk5cnhltTc8A6eaf4ClS/wQ==",
   "success": true,
   "projectFilePath": "/Users/lukesimkins/Projects/crossfold/aic-scripts/aic-scripts.csproj",
   "expectedPackageFiles": [
-    "/Users/lukesimkins/.nuget/packages/csvhelper/27.2.1/csvhelper.27.2.1.nupkg.sha512"
+    "/Users/lukesimkins/.nuget/packages/csvhelper/27.2.1/csvhelper.27.2.1.nupkg.sha512",
+    "/Users/lukesimkins/.nuget/packages/system.net.http.json/6.0.0/system.net.http.json.6.0.0.nupkg.sha512",
+    "/Users/lukesimkins/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "/Users/lukesimkins/.nuget/packages/system.text.encodings.web/6.0.0/system.text.encodings.web.6.0.0.nupkg.sha512",
+    "/Users/lukesimkins/.nuget/packages/system.text.json/6.0.0/system.text.json.6.0.0.nupkg.sha512"
   ],
   "logs": []
 }
