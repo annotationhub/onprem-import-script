@@ -38,17 +38,17 @@ namespace ImportAnnoLabSources
             Console.WriteLine("Successfully uploaded <{0}>", result.pendingSource.name);
           }
 
-          Console.WriteLine("PS Count: {0} ", pendingSources.Count);
-
           Console.WriteLine("Waiting on OCR to Complete...");
           var finishedSources = await PollUntilOcrComplete(pendingSources);
           Console.WriteLine("OCR Completed. Preparing to run predictions.");
 
-          Console.WriteLine("PS Count 2: {0} ", finishedSources.Count);
+          var jobs1 = await SubmitBatchInferences(finishedSources, modelGroup1);
+          await PollUntilBatchJobsComplete(jobs1);
+          Console.WriteLine("Batch 1 predictions Completed. Submitting second batch...");
 
-          await SubmitBatchInferences(finishedSources, modelGroup1);
-          Console.WriteLine("Batch 1 predictions Completed. Submitting second batch");
-          await SubmitBatchInferences(finishedSources, modelGroup2);
+          var jobs2 = await SubmitBatchInferences(finishedSources, modelGroup2);
+          await PollUntilBatchJobsComplete(jobs2);
+          Console.WriteLine("Batch 2 predictions Completed.");
         }
 
         static async Task<List<InferenceJob>> SubmitBatchInferences(List<PendingSource> pendingSources, int[] modelIds)
@@ -102,7 +102,7 @@ namespace ImportAnnoLabSources
 
           foreach (InferenceJob job in inferenceJobs)
           {
-            if (job.status != "Complete" || job.status != "Errored") {
+            if (job.status != "Finished" || job.status != "Errored") {
               var updatedJob = await client.GetFromJsonAsync<InferenceJob>($"{predictUri}/{job.inferenceJobId}");
               updatedList.Add(updatedJob);
             } else {
@@ -110,20 +110,14 @@ namespace ImportAnnoLabSources
             }
           }
 
-          var complete = true;
-          foreach (InferenceJob job in updatedList)
-          {
-            if (job.status != "Complete" || job.status != "Errored") {
-              complete = false;
-            }
-          }
+          var incompleteJob = updatedList.Find(job => job.status != "Finished" && job.status != "Errored");
 
-          if (!complete) {
-            Thread.Sleep(pollInterval);
-            return await PollUntilBatchJobsComplete(inferenceJobs);
-          } else {
+          if (incompleteJob != null) {
             return updatedList;
           }
+
+          Thread.Sleep(pollInterval);
+          return await PollUntilBatchJobsComplete(updatedList);
         }
 
         static async Task<List<PendingSource>> PollUntilOcrComplete(List<PendingSource> pendingSources)
@@ -144,22 +138,15 @@ namespace ImportAnnoLabSources
             }
           }
 
-          var complete = true;
-          foreach (PendingSource ps in updatedList)
-          {
-            if (ps.finalSourceId == null && ps.status != "Errored") {
-              complete = false;
-              break;
-            }
-          }
+          var incompleteSource = updatedList
+            .Find(ps => ps.finalSourceId == null && ps.status != "Errored");
 
-          if (!complete) {
-            Thread.Sleep(pollInterval);
-            return await PollUntilOcrComplete(updatedList);
-          } else {
+          if (incompleteSource == null) {
             return updatedList;
           }
 
+          Thread.Sleep(pollInterval);
+          return await PollUntilOcrComplete(updatedList);
         }
 
         static List<CSVImportRow> readFileList()
