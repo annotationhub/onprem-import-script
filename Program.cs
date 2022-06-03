@@ -102,7 +102,7 @@ namespace ImportAnnoLabSources
 
           foreach (InferenceJob job in inferenceJobs)
           {
-            if (job.status != "Finished" || job.status != "Errored") {
+            if (job.status != "Finished" || job.status != "Errored" || job.status != "Complete") {
               var updatedJob = await client.GetFromJsonAsync<InferenceJob>($"{predictUri}/{job.inferenceJobId}");
               updatedList.Add(updatedJob);
             } else {
@@ -110,13 +110,15 @@ namespace ImportAnnoLabSources
             }
           }
 
-          var incompleteJob = updatedList.Find(job => job.status != "Finished" && job.status != "Errored");
+          var incompleteJob = updatedList
+            .Find(job => job.status != "Finished" && job.status != "Complete" && job.status != "Errored");
 
-          if (incompleteJob != null) {
+          if (incompleteJob == null) {
             return updatedList;
           }
 
           Thread.Sleep(pollInterval);
+          Console.WriteLine("Predictions Incomplete...polling");
           return await PollUntilBatchJobsComplete(updatedList);
         }
 
@@ -139,7 +141,7 @@ namespace ImportAnnoLabSources
           }
 
           var incompleteSource = updatedList
-            .Find(ps => ps.finalSourceId == null && ps.status != "Errored");
+            .Find(ps => ps.status != "Complete" && ps.status != "Errored");
 
           if (incompleteSource == null) {
             return updatedList;
@@ -164,12 +166,26 @@ namespace ImportAnnoLabSources
           var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
           var httpClient = new HttpClient(httpClientHandler, true);
           var requestMessage = new HttpRequestMessage(HttpMethod.Post, uploadUri);
+          var metadata = new DocumentMetadata() {
+            orderId = row.orderId,
+            orderItemId = row.orderItemId,
+            make = row.make,
+            model = row.model,
+            serial = row.serial,
+            nNumber = row.nNumber
+          };
           var formDataContent = new MultipartFormDataContent() {
             { new StringContent(projectName), "projectIdentifier" },
             { new StringContent(groupName), "groupName" },
             { new StringContent(Path.GetFileName(row.filepath)), "sourceIdentifier" },
           };
 
+          var jsonMetadata = new StringContent(
+            JsonConvert.SerializeObject(metadata),
+            System.Text.Encoding.UTF8,
+            "application/json"
+          );
+          formDataContent.Add(jsonMetadata, "metadata");
           formDataContent.Add(fileStreamContent, name: "file", fileName: "source.pdf");
           requestMessage.Content = formDataContent;
 
@@ -195,6 +211,16 @@ namespace ImportAnnoLabSources
     class CSVImportRow
     {
       public string filepath { get; set; }
+      public string orderId { get; set; }
+      public string orderItemId { get; set; }
+      public string make { get; set; }
+      public string model { get; set; }
+      public string serial { get; set; }
+      public string nNumber { get; set; }
+    }
+
+    class DocumentMetadata
+    {
       public string orderId { get; set; }
       public string orderItemId { get; set; }
       public string make { get; set; }
