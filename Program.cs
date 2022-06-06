@@ -10,19 +10,19 @@ namespace ImportAnnoLabSources
     class Program
     {
         static readonly HttpClient client = new HttpClient();
-        static readonly string projectName = "AIC";
-        static readonly string groupName = "lsimkins";
-        static readonly string apiBaseUri = "http://localhost:8080/v1";
+        static readonly string projectName = "Test Project";
+        static readonly string groupName = "luke";
+        static readonly string apiBaseUri = "https://annolab-api.vectorstech.com/v1";
         static readonly string uploadUri = $"{apiBaseUri}/source/upload-pdf";
         static readonly string pendingSourceUri = $"{apiBaseUri}/pending-source";
 
         static readonly string predictUri = $"{apiBaseUri}/model/infer/batch";
-        static readonly string authHeader = "Api-Key KS7YXWC-R5NM63T-H0NR63N-DVZBR86";
+        static readonly string authHeader = "Api-Key 9MBR1PN-RRRMRTZ-H3N0ZWP-44V8EP8";
 
         static readonly int pollInterval = 15000;
 
-        static readonly int[] modelGroup1 = new int[]{ 13 };
-        static readonly int[] modelGroup2 = new int[]{ 11, 12 };
+        static readonly int[] modelGroup1 = new int[]{ 1 };
+        static readonly int[] modelGroup2 = new int[]{ 2 };
 
         static async Task Main()
         {
