@@ -38,17 +38,17 @@ namespace ImportAnnoLabSources
             Console.WriteLine("Successfully uploaded <{0}>", result.pendingSource.name);
           }
 
-          Console.WriteLine("Waiting on OCR to Complete...");
-          var finishedSources = await PollUntilOcrComplete(pendingSources);
-          Console.WriteLine("OCR Completed. Preparing to run predictions.");
+          // Console.WriteLine("Waiting on OCR to Complete...");
+          // var finishedSources = await PollUntilOcrComplete(pendingSources);
+          // Console.WriteLine("OCR Completed. Preparing to run predictions.");
 
-          var jobs1 = await SubmitBatchInferences(finishedSources, modelGroup1);
-          await PollUntilBatchJobsComplete(jobs1);
-          Console.WriteLine("Batch 1 predictions Completed. Submitting second batch...");
+          // var jobs1 = await SubmitBatchInferences(finishedSources, modelGroup1);
+          // await PollUntilBatchJobsComplete(jobs1);
+          // Console.WriteLine("Batch 1 predictions Completed. Submitting second batch...");
 
-          var jobs2 = await SubmitBatchInferences(finishedSources, modelGroup2);
-          await PollUntilBatchJobsComplete(jobs2);
-          Console.WriteLine("Batch 2 predictions Completed.");
+          // var jobs2 = await SubmitBatchInferences(finishedSources, modelGroup2);
+          // await PollUntilBatchJobsComplete(jobs2);
+          // Console.WriteLine("Batch 2 predictions Completed.");
         }
 
         static async Task<List<InferenceJob>> SubmitBatchInferences(List<PendingSource> pendingSources, int[] modelIds)
@@ -174,18 +174,54 @@ namespace ImportAnnoLabSources
             serial = row.serial,
             nNumber = row.nNumber
           };
+
+          var airframeTag = new DocumentTag() {
+            typeName = "Airframe Inventory",
+            attributes = new DocumentTagAttribute[3] {
+              new DocumentTagAttribute {
+                name = "Make",
+                value = row.make
+              },
+              new DocumentTagAttribute {
+                name = "Model",
+                value = row.model
+              },
+              new DocumentTagAttribute {
+                name = "Model",
+                value = row.model
+              },
+            }
+          };
+
+          var orderTag = new DocumentTag() {
+            typeName = "Order",
+            attributes = new DocumentTagAttribute[1] {
+              new DocumentTagAttribute {
+                name = "Order Id",
+                value = row.orderId
+              }
+            }
+          };
+
           var formDataContent = new MultipartFormDataContent() {
             { new StringContent(projectName), "projectIdentifier" },
             { new StringContent(groupName), "groupName" },
             { new StringContent(Path.GetFileName(row.filepath)), "sourceIdentifier" },
+            { new StringContent("aircraft_title"), "workflow"}
           };
 
-          var jsonMetadata = new StringContent(
-            JsonConvert.SerializeObject(metadata),
+          // var jsonMetadata = new StringContent(
+          //   JsonConvert.SerializeObject(metadata),
+          //   System.Text.Encoding.UTF8,
+          //   "application/json"
+          // );
+          // formDataContent.Add(jsonMetadata, "metadata");
+          var tags = new StringContent(
+            JsonConvert.SerializeObject(new DocumentTag[2] { airframeTag, orderTag }),
             System.Text.Encoding.UTF8,
             "application/json"
           );
-          formDataContent.Add(jsonMetadata, "metadata");
+          formDataContent.Add(tags, "tags");
           formDataContent.Add(fileStreamContent, name: "file", fileName: "source.pdf");
           requestMessage.Content = formDataContent;
 
@@ -227,6 +263,18 @@ namespace ImportAnnoLabSources
       public string model { get; set; }
       public string serial { get; set; }
       public string nNumber { get; set; }
+    }
+
+    class DocumentTag
+    {
+      public string typeName { get; set; }
+      public DocumentTagAttribute[] attributes { get; set; }
+    }
+
+    class DocumentTagAttribute
+    {
+      public string name { get; set; }
+      public string value { get; set; }
     }
 
     class UploadPdfResponse
