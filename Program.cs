@@ -10,14 +10,14 @@ namespace ImportAnnoLabSources
     class Program
     {
         static readonly HttpClient client = new HttpClient();
-        static readonly string projectName = "Test Project";
-        static readonly string groupName = "luke";
-        static readonly string apiBaseUri = "https://annolab-api.vectorstech.com/v1";
+        static readonly string projectName = "<project name>";
+        static readonly string groupName = "<group name>";
+        static readonly string apiBaseUri = "https://api.annolab.ai/v1";
         static readonly string uploadUri = $"{apiBaseUri}/source/upload-pdf";
         static readonly string pendingSourceUri = $"{apiBaseUri}/pending-source";
 
         static readonly string predictUri = $"{apiBaseUri}/model/infer/batch";
-        static readonly string authHeader = "Api-Key 9MBR1PN-RRRMRTZ-H3N0ZWP-44V8EP8";
+        static readonly string authHeader = "Api-Key <API KEY>";
 
         static readonly int pollInterval = 15000;
 
